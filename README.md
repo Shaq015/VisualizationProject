@@ -22,8 +22,30 @@ The dashboard consists of 3 main sections:
 - Python
 - Python Libraries: Streamlit, Plotly, Seaborn, Matplotlib, Pandas, Scikit-learn, Numpy
 
-## Running the Dashboard
-### Local (for development)
-Run:
-```bash
-streamlit run streamlit_dashboard.py
+## Live Dashboard
+Explore the interactive dashboard here:
+
+[EA FC 25 Visualization Dashboard](https://visualizationproject-9o5lfnkhzn73qozcwyffwm.streamlit.app/)
+
+## Setup Instructions (for local development)
+To run this project locally:
+
+1. Clone the repository:
+    ```
+    git clone <your-repo-url>
+    ```
+2. Install required dependencies:
+    ```
+    pip install -r requirements.txt
+    ```
+3. Run the dashboard:
+    ```
+    streamlit run streamlit_dashboard.py
+    ```
+
+## Requirements
+See [requirements.txt](requirements.txt) for the full list of required libraries.
+
+## Authors
+This project was created by **Oren Raz, Ilay Damari, Guy Dulberg and Myself** as part of a data visualization course project.
+
