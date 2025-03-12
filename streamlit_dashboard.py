@@ -1,45 +1,93 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from sklearn.linear_model import LinearRegression
 import numpy as np
+import plotly.express as px
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.linear_model import LinearRegression
+from datetime import datetime
 
-# Load dataset
-data_path = "ea_sports_fc_player_ratings.csv"
-df = pd.read_csv(data_path)
+# Load Data
+df = pd.read_csv("ea_sports_fc_player_ratings.csv")
 
-# Define quantitative features (complete list)
+# Define quantitative attributes
 quantitative_features = [
-    'Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physical', 'Acceleration', 'Agility',
-    'Jumping', 'Stamina', 'Strength', 'Aggression', 'Balance', 'Ball Control', 'Composure',
-    'Crossing', 'Curve', 'Defensive Awareness', 'Finishing', 'Free Kick Accuracy', 'GK Diving',
-    'GK Handling', 'GK Kicking', 'GK Positioning', 'GK Reflexes', 'Heading Accuracy', 'Interceptions',
-    'Long Passing', 'Long Shots', 'Penalties', 'Positioning', 'Reactions', 'Short Passing',
-    'Shot Power', 'Sliding Tackle', 'Sprint Speed', 'Standing Tackle', 'Vision', 'Volleys'
+    'Pace', 'Shooting', 'Passing', 'Dribbling', 'Defending', 'Physical',
+    'Acceleration', 'Agility', 'Jumping', 'Stamina', 'Strength', 'Aggression',
+    'Balance', 'Ball Control', 'Composure', 'Crossing', 'Curve',
+    'Defensive Awareness', 'Finishing', 'Free Kick Accuracy', 'GK Diving', 'GK Handling',
+    'GK Kicking', 'GK Positioning', 'GK Reflexes', 'Heading Accuracy',
+    'Interceptions', 'Long Passing', 'Long Shots', 'Penalties', 'Positioning',
+    'Reactions', 'Short Passing', 'Shot Power', 'Sliding Tackle', 'Sprint Speed',
+    'Standing Tackle', 'Vision', 'Volleys'
 ]
 
-# Set up League_Nation mapping
-def assign_league_nation(team):
-    leagues = {
-        "England": ['Arsenal', 'Aston Villa', 'Manchester City', 'Chelsea', 'Liverpool', 'Spurs'],
-        "Spain": ['FC Barcelona', 'Real Madrid', 'Atlético de Madrid', 'Sevilla FC'],
-        "Germany": ['Bayern Munich', 'Borussia Dortmund', 'RB Leipzig'],
-        "France": ['Paris SG', 'Marseille', 'Lyon', 'Monaco'],
-        "USA": ['Inter Miami CF', 'LA Galaxy', 'New York City FC']
-    }
-    for league, teams in leagues.items():
-        if team in teams:
-            return league
-    return "Rest of the World"
+# ---- League Mapping Functions ----
+def map_league_men(team):
+    english_men_teams = ['Arsenal', 'Aston Villa', 'Manchester City', 'Manchester Utd', 'Chelsea', 'Liverpool',
+                         'AFC Bournemouth', 'Spurs', 'Newcastle Utd', 'West Ham', 'Everton', 'Crystal Palace',
+                         'Brighton', 'Wolves', 'Fulham', "Nott'm Forest", 'Brentford', 'Leicester City', 'Southampton', 'Ipswich']
+    spanish_men_teams = ['FC Barcelona', 'Real Madrid', 'Atlético de Madrid', 'Athletic Club', 'Girona FC', 'Villarreal CF',
+                         'Real Sociedad', 'Real Betis', 'Sevilla FC', 'RCD Mallorca', 'Valencia CF', 'Rayo Vallecano',
+                         'RC Celta', 'CA Osasuna', 'UD Las Palmas', 'D. Alavés', 'Getafe CF', 'CD Leganes', 'RCD Espanyol',
+                         'R. Valladolid CF']
+    german_men_teams = ['FC Bayern München', 'Leverkusen', 'Borussia Dortmund', 'RB Leipzig', 'Frankfurt', 'TSG Hoffenhein',
+                        'SC Freiburg', "M'gladbach", 'VfL Wolfsburg', 'VfB Stuttgart', 'Union Berlin', 'SV Werder Bremen',
+                        'FC Augsburg', '1. FSV Mainz 05', 'VfL Bochum 1848', 'Heidenheim', 'FC St. Pauli', 'Holstein Kiel']
+    french_men_teams = ['Paris SG', 'OM', 'OL', 'AS Monaco', 'LOSC Lille', 'OGC Nice', 'RC Lens', 'Stade Brestois 29',
+                        'Stade Rennais FC', 'Montpellier', 'Stade de Reims', 'Toulouse FC', 'FC Nantes', 'Strasbourg',
+                        'Havre AC', 'AJ Auxerre', 'AS Saint-Étienne', 'Angers SCO']
+    usa_men_teams = ['Inter Miami CF', 'LAFC', 'LA Galaxy', 'FC Cincinnati', 'Columbus Crew', 'Philadelphia',
+                     'Sounders FC', 'Charlotte FC', 'Whitecaps FC', 'Houston Dynamo', 'St. Louis CITY SC', 'New England',
+                     'Atlanta United', 'Orlando City', 'SJ Earthquakes', 'Portland Timbers', 'Real Salt Lake', 'FC Dallas',
+                     'Nashville SC', 'Austin FC', 'D.C. United', 'Sporting KC', 'Red Bulls', 'Toronto FC', 'Minnesota United',
+                     'New York City FC', 'Chicago Fire FC', 'CF Montréal', 'Colorado Rapids']
 
-df['League_Nation'] = df['Team'].apply(assign_league_nation)
+    if team in english_men_teams:
+        return 'England'
+    elif team in spanish_men_teams:
+        return 'Spain'
+    elif team in german_men_teams:
+        return 'Germany'
+    elif team in french_men_teams:
+        return 'France'
+    elif team in usa_men_teams:
+        return 'USA'
+    else:
+        return 'Rest of the World'
 
-# Sidebar Navigation
+def map_league_women(team):
+    english_women_teams = ['Arsenal', 'Aston Villa', 'Brighton', 'Chelsea', 'Crystal Palace', 'Everton', 'Leicester City',
+                           'Liverpool', 'Manchester City', 'Manchester Utd', 'Spurs', 'West Ham']
+    spanish_women_teams = ['FC Barcelona', 'Real Madrid CF', 'Atlético de Madrid', 'Athletic Club', 'Granada CF',
+                           'Levante Badalona', 'Levante UD', 'Madrid CFF', 'RC Deportivo', 'RCD Espanyol', 'Real Betis',
+                           'Real Sociedad', 'SD Eibar', 'Sevilla FC', 'UD Tenerife', 'Valencia CF']
+    german_women_teams = ['1. FC Köln', 'Carl Zeiss Jena', 'FC Bayern München', 'Frankfurt', 'Leverkusen', 'RB Leipzig',
+                          'SC Freiburg', 'SGS Essen', 'SV Werder Bremen', 'TSG Hoffenheim', 'Turbine Potsdam', 'VfL Wolfsburg']
+    french_women_teams = ['OL', 'Paris SG', 'AS Saint Étienne', 'Dijon FCO', 'En Avant Guingamp', 'FC Fleury 91', 'FC Nantes',
+                          'Havre AC', 'Montpellier', 'Paris FC', 'Stade de Reims', 'Strasbourg']
+    usa_women_teams = ['Angel City FC', 'Bay FC', 'Chicago Red Stars', 'KC Current', 'Houston Dash', 'NC Courage', 'NJ/NY Gotham',
+                       'Orlando Pride', 'Portland Thorns', 'Rac. Louisville', 'San Diego Wave', 'Seattle Reign', 'Utah Royals FC',
+                       'Washington Spirit']
+
+    if team in english_women_teams:
+        return 'England'
+    elif team in spanish_women_teams:
+        return 'Spain'
+    elif team in german_women_teams:
+        return 'Germany'
+    elif team in french_women_teams:
+        return 'France'
+    elif team in usa_women_teams:
+        return 'USA'
+    else:
+        return 'Rest of the World'
+
+# Sidebar for Navigation
 st.sidebar.title("Navigation")
-page = st.sidebar.radio("Select a page:", ["Home", "Africa", "Men vs Women", "Ages"])
+page = st.sidebar.radio("Go to:", ["Home", "Africa", "Men vs Women", "Ages"])
 
-# Home Page
+# ---- HOME PAGE ----
 if page == "Home":
     st.title("Reflecting Stereotypes in Football Using EA FC 25 Data")
     st.write("""
@@ -56,104 +104,110 @@ if page == "Home":
     - Rest of the World
 
     **2. Men vs Women - Gendered Attributes**  
-    Analyzes differences across selected attributes (like composure, aggression, etc.) for players in selected leagues.
+    Analyzes differences across selected attributes (like composure, aggression, etc.) for men and women players in selected leagues.
 
     **3. Ages - Age-Based Performance**  
     Tracks how selected physical attributes change across ages.
+
+    🔄 **Customize Your Analysis:**  
+    Users can select different attributes to explore patterns beyond the defaults.
     """)
 
-# Africa Tab
-elif page == "Africa":
-    st.title("Regional Physical Abilities")
+# ---- AFRICA TAB ----
+if page == "Africa":
+    st.title("Africa - Regional Physical Abilities")
 
-    # Select traits (limit 1 to 5)
-    selected_features = st.multiselect("Select 1 to 5 Physical Traits:", quantitative_features,
-                                       default=['Pace', 'Stamina', 'Strength', 'Aggression'],
-                                       max_selections=5)
+    # Define Regions
+    north_african_countries = ['Egypt', 'Morocco', 'Algeria', 'Tunisia', 'Libya', 'Mauritania', 'Sudan']
+    rest_of_africa_countries = ['Angola', 'Benin', 'Burkina Faso', 'Burundi', 'Cameroon', 'Cape Verde Islands',
+                                'Central African Republic', 'Chad', 'Congo DR', "Côte d'Ivoire", 'Equatorial Guinea',
+                                'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea Bissau', 'Kenya', 'Liberia',
+                                'Madagascar', 'Malawi', 'Mali', 'Mozambique', 'Namibia', 'Nigeria', 'Rwanda',
+                                'Senegal', 'Sierra Leone', 'Somalia', 'Tanzania', 'Togo', 'Uganda', 'Zambia', 'Zimbabwe']
+
+    df['region'] = df['Nation'].apply(lambda x: 'North Africa' if x in north_african_countries else
+                                      ('Rest of Africa' if x in rest_of_africa_countries else 'Rest of World'))
+
+    # Trait Selection
+    selected_features = st.multiselect("Select 1 to 5 Traits:", quantitative_features,
+                                       default=['Pace', 'Stamina', 'Strength', 'Aggression'], max_selections=5)
 
     if len(selected_features) < 1:
         st.warning("Please select at least 1 feature.")
         st.stop()
 
-    # Set up regions
-    df['region'] = df['Nation'].apply(lambda x: 'North Africa' if x in ['Egypt', 'Morocco', 'Algeria', 'Tunisia', 'Libya', 'Mauritania', 'Sudan']
-                                      else ('Rest of Africa' if x in ['Nigeria', 'Senegal', 'Ghana', 'Cameroon'] else 'Rest of World'))
-
-    # Average calculation
     region_means = df.groupby('region')[selected_features].mean().reset_index()
 
-    # Bar chart (traits on X, avg values as bars, split by region)
-    fig = go.Figure()
-    for region in region_means['region']:
-        values = region_means[region_means['region'] == region][selected_features].values.flatten()
-        fig.add_trace(go.Bar(x=selected_features, y=values, name=region))
+    # Reshape data to long format for Plotly
+    df_melted = region_means.melt(id_vars=['region'], var_name="Attribute", value_name="Average Value")
 
-    fig.update_layout(barmode='group', title="Average Physical Traits by Region", yaxis=dict(range=[50, 100]))
-    st.plotly_chart(fig)
-
-# Men vs Women Tab
-elif page == "Men vs Women":
-    st.title("Gender-Based Attributes Analysis")
-
-    gender_filter = st.selectbox("Filter by Gender:", ["Both", "Men", "Women"], index=0)
-    selected_leagues = st.multiselect("Select Leagues:", df['League_Nation'].unique(), default=df['League_Nation'].unique())
-
-    x_axis = st.selectbox("Select Attribute for X-axis:", quantitative_features, index=quantitative_features.index('Aggression'))
-    y_axis = st.selectbox("Select Attribute for Y-axis:", quantitative_features, index=quantitative_features.index('Composure'))
-
-    df_filtered = df[df['League_Nation'].isin(selected_leagues)]
-    if gender_filter == "Men":
-        df_filtered = df_filtered[df_filtered['Gender'] == "Men's Football"]
-    elif gender_filter == "Women":
-        df_filtered = df_filtered[df_filtered['Gender'] == "Women's Football"]
-
-    color_map = {"Men's Football": "blue", "Women's Football": "orange"}
-
-    # Scatter Plot
-    fig = px.scatter(df_filtered, x=x_axis, y=y_axis, color='Gender', hover_data=['Name', 'Gender'],
-                     title=f"{x_axis} vs {y_axis} by Gender & League", color_discrete_map=color_map)
-
-    # Add trendlines (to appear on top)
-    for gender in df_filtered['Gender'].unique():
-        gender_data = df_filtered[df_filtered['Gender'] == gender]
-        x = gender_data[x_axis].values.reshape(-1, 1)
-        y = gender_data[y_axis].values
-        model = LinearRegression().fit(x, y)
-        x_range = np.linspace(x.min(), x.max(), 100).reshape(-1, 1)
-        y_pred = model.predict(x_range)
-
-        fig.add_trace(go.Scatter(x=x_range.flatten(), y=y_pred, mode='lines',
-                                 name=f"{gender} Trendline",
-                                 line=dict(color="navy" if gender == "Men's Football" else "#FF6666"),
-                                 opacity=1))
+    # Create the grouped bar chart by Attribute
+    fig = px.bar(df_melted, x="Attribute", y="Average Value", color="region",
+                 barmode="group", title="Comparison of Physical Features by Region")
 
     st.plotly_chart(fig)
 
-# Ages Tab
-elif page == "Ages":
-    st.title("Age-Based Performance")
 
-    min_age, max_age = 17, 43
-    age_range = st.slider("Select Age Range (Min & Max should differ):", min_age, max_age, (min_age, max_age))
+# ---- MEN VS WOMEN TAB ----
+if page == "Men vs Women":
+    st.title("Men vs Women - Gendered Attributes")
+
+    df_men = df[df['Gender'] == "Men's Football"]
+    df_women = df[df['Gender'] == "Women's Football"]
+
+    df_men['League_Nation'] = df_men['Team'].apply(map_league_men)
+    df_women['League_Nation'] = df_women['Team'].apply(map_league_women)
+
+    df_combined = pd.concat([df_men, df_women], ignore_index=True)
+
+    # Default leagues: England, France, Germany, Spain, USA
+    selected_leagues = st.multiselect("Select Leagues:", df_combined["League_Nation"].unique(),
+                                      default=['England', 'France', 'Germany', 'Spain', 'USA'])
+
+    if not selected_leagues:
+        st.warning("Please select at least one league.")
+        st.stop()
+
+    # Default X & Y attributes
+    x_attr = st.selectbox("Select X-axis Attribute:", quantitative_features, index=quantitative_features.index('Aggression'))
+    y_attr = st.selectbox("Select Y-axis Attribute:", quantitative_features, index=quantitative_features.index('Composure'))
+
+    df_filtered = df_combined[df_combined['League_Nation'].isin(selected_leagues)]
+
+    fig = px.scatter(df_filtered, x=x_attr, y=y_attr, color="Gender",
+                     color_discrete_map={"Men's Football": "blue", "Women's Football": "orange"},
+                     title="Comparison of Player Attributes by Gender",
+                     trendline="ols", opacity=0.7, hover_data=["Name"])
+
+    st.plotly_chart(fig)
+
+# ---- AGES TAB ----
+if page == "Ages":
+    st.title("Ages - Age-Based Performance")
+
+    df['Birthdate'] = pd.to_datetime(df['Birthdate'], errors='coerce')
+    reference_date = datetime(2024, 10, 1)
+    df['Age'] = df['Birthdate'].apply(lambda x: reference_date.year - x.year -
+                                      ((reference_date.month, reference_date.day) < (x.month, x.day)) if pd.notnull(x) else None)
+
+    df = df[df['Position'] != 'GK']
+
+    age_range = st.slider("Select Age Range:", 17, 43, (17, 43), step=1)
 
     if age_range[0] == age_range[1]:
         st.warning("Minimum and Maximum age should be different.")
         st.stop()
 
     selected_features = st.multiselect("Select 1 to 5 Traits:", quantitative_features,
-                                       default=['Pace', 'Stamina', 'Reactions', 'Strength'],
-                                       max_selections=5)
+                                       default=['Pace', 'Stamina', 'Reactions', 'Strength'], max_selections=5)
 
     if len(selected_features) < 1:
         st.warning("Please select at least 1 feature.")
         st.stop()
 
-    df['Birthdate'] = pd.to_datetime(df['Birthdate'], errors='coerce')
-    df['Age'] = 2024 - df['Birthdate'].dt.year
-    df_filtered = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1]) & (df['Position'] != 'GK')]
+    df_filtered = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1])]
 
-    # Grouped mean
-    age_means = df_filtered.groupby('Age')[selected_features].mean().reset_index()
+    fig = px.line(df_filtered.groupby("Age")[selected_features].mean().reset_index(),
+                  x="Age", y=selected_features, title="Trends in Player Attributes by Age")
 
-    fig = px.line(age_means, x='Age', y=selected_features, title="Changes in Abilities Over Age")
     st.plotly_chart(fig)
