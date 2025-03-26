@@ -161,8 +161,8 @@ elif page == "Africa":
             font=dict(size=16, color="black")
         ),
         font=dict(size=14),
-        yaxis=dict(range=[0, 100], showgrid=False),
-        xaxis=dict(showgrid=False, tickangle=-45),
+        yaxis=dict(range=[0, 100], showgrid=False, showticklabels=False),
+        xaxis=dict(showgrid=False, tickangle=-45, tickfont=dict(size=14, color='black')),
         legend=dict(
             title=dict(
                 text="<b>Continent Category:</b>",
